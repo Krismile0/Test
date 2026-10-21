@@ -439,6 +439,35 @@
       "stockout_rate": "0.1371"
     }
   ],
+  "missed_analysis": {
+    "total_missed_after_rule_c": 20,
+    "groups": {
+      "fresh_non_amazon": {
+        "n": 590,
+        "stockouts": 11,
+        "rate": 0.0186,
+        "catch_all_cost": 8850,
+        "recoverable": 990,
+        "net": -7860
+      },
+      "amazon_fresh_high_stock": {
+        "n": 159,
+        "stockouts": 3,
+        "rate": 0.0189,
+        "catch_all_cost": 2385,
+        "recoverable": 270,
+        "net": -2115
+      },
+      "amazon_stale": {
+        "n": 66,
+        "stockouts": 6,
+        "rate": 0.0909,
+        "catch_all_cost": 990,
+        "recoverable": 540,
+        "net": -450
+      }
+    }
+  },
   "implementation_check": {
     "rule_b_flagged_impl": 193,
     "rule_b_flagged_analysis": 193,

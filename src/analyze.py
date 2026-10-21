@@ -266,6 +266,24 @@ def main() -> None:
     ax.legend(fontsize=8); fig.tight_layout(); fig.savefig(OUT / "fig_cost_curve.png", dpi=150); plt.close(fig)
 
     normalize_outputs()
+    # 漏判分析：规则 C 之后剩下的砍单按「可拦截分组」拆开，逐组算全抓的账
+    miss = ~rules["rule_C_plus_amazon_lowstock"] & (d["order_status"] == 0)
+    miss_groups = {
+        "fresh_non_amazon": d[(d.lag_min <= stale_thr) & (d.platform_channel != "amazon_us")],
+        "amazon_fresh_high_stock": d[(d.lag_min <= stale_thr) & (d.platform_channel == "amazon_us")
+                                     & (d.stock_display > 3)],
+        "amazon_stale": d[(d.lag_min > stale_thr) & (d.platform_channel == "amazon_us")],
+    }
+    m["missed_analysis"] = {
+        "total_missed_after_rule_c": int(miss.sum()),
+        "groups": {name: dict(n=len(g), stockouts=int((g.order_status == 0).sum()),
+                              rate=round(1 - g.order_status.mean(), 4),
+                              catch_all_cost=int(15 * len(g)),
+                              recoverable=int(90 * (g.order_status == 0).sum()),
+                              net=int(90 * (g.order_status == 0).sum() - 15 * len(g)))
+                   for name, g in miss_groups.items()},
+    }
+
     # 生产实现 src/rule.py 与分析口径的一致性校验
     from rule import should_flag
     impl_B = d.apply(lambda r: should_flag(lag_min=r["lag_min"], platform_channel=r["platform_channel"],
