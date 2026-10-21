@@ -136,7 +136,6 @@ def main() -> None:
         "no_action": pd.Series(False, index=d.index),
         "rule_lag>8": d["lag_min"] > stale_thr,
         "rule_lag>8_and_channel!=amazon": (d["lag_min"] > stale_thr) & (d["platform_channel"] != "amazon_us"),
-        "rule_lag>8_and_channel_not_in_(amazon)": (d["lag_min"] > stale_thr) & (d["platform_channel"] != "amazon_us"),
     }
     # 逐阈值扫描（单变量 lag 规则）
     scan = []

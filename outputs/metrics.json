@@ -300,17 +300,6 @@
       "rule": "rule_lag>8_and_channel!=amazon",
       "saving": 6375,
       "saving_pct": 52.08
-    },
-    {
-      "tp": 103,
-      "fp": 90,
-      "fn": 33,
-      "tn": 808,
-      "flagged": 193,
-      "cost": 5865,
-      "rule": "rule_lag>8_and_channel_not_in_(amazon)",
-      "saving": 6375,
-      "saving_pct": 52.08
     }
   ],
   "counterfactual_fix_sync": {
