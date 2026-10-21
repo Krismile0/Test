@@ -97,7 +97,8 @@ Amazon 的库存即便延迟 60 分钟，砍单率也只从 8.6% 升到 9.1%—�
 ```bash
 pip install -r requirements.txt
 python src/analyze.py        # 主分析：断点、分层、成本规则、4 张图
-python src/robustness.py     # 稳健性：Bootstrap、时序外推、成本敏感性
+python src/robustness.py     # 稳健性：Bootstrap、时序外推、成本敏感性、拦截率
+python src/rule.py           # 生产实现自测
 ```
 
 产出：`outputs/metrics.json`（主分析全部数字）、`outputs/robustness.json`（稳健性全部数字）、`outputs/*.csv`、5 张图。README 中每个数字都能在上面的 JSON/CSV 中找到对应字段。
@@ -216,6 +217,19 @@ python src/robustness.py   # 产出 outputs/robustness.json、outputs/sensitivit
 
 时间上也有一个切面：Amazon 新鲜档低库存单在 09-01/02 为 0/5 砍单，09-03 起变成 13/21——像是 9 月 3 日的库存回传口径变化，样本小，建议单独布防并做灰度。
 
+### 漏判分析：剩下的 20 单要不要抓？
+
+规则 C 之后还漏 20 笔砍单。把它们按可拦截的分组拆开，逐组算「全抓」的账：
+
+| 漏判组 | 订单数 | 砍单数 | 砍单率 | 全抓成本 | 可挽回 | 净收益 |
+|---|---|---|---|---|---|---|
+| 新鲜档 · 非 Amazon | 590 | 11 | 1.9% | 8,850 元 | 990 元 | **−7,860 元** |
+| Amazon · 新鲜档 · 库存 >3 | 159 | 3 | 1.9% | 2,385 元 | 270 元 | **−2,115 元** |
+| Amazon · 迟滞档 | 66 | 6 | 9.1% | 990 元 | 540 元 | **−450 元** |
+
+三组的砍单率都低于 16.7% 的决策线，**全抓任何一组都是净亏损**。
+所以这 20 单不是规则缺陷，是经济上正确地放掉——继续加规则只会让总成本上升。
+
 ### 落地建议（按性价比排序）
 
 1. **立刻可做（当天）**：库存展示加新鲜度闸门——`lag > 8 分钟` 且渠道非 Amazon 时，不展示确定库存（改为「库存确认中」/ 延后承诺），成本 15 元/次，预期省 52%。
@@ -224,7 +238,29 @@ python src/robustness.py   # 产出 outputs/robustness.json、outputs/sensitivit
 
 ---
 
-## 4. 局限与未完成
+## 4. 上线形态
+
+不是只给一条阈值，而是给可接入的东西：
+
+| 交付 | 路径 | 说明 |
+|---|---|---|
+| 参考实现 | `src/rule.py` | `should_flag(lag_min, platform_channel, stock_display, variant)`，含边界自测 |
+| 一致性校验 | `outputs/metrics.json` → `implementation_check` | 实现层标记数必须等于分析层：B=193、C=219 |
+| 落地说明 | `docs/rollout.md` | 决策点、SQL、配置项、文案、监控、灰度、回滚 |
+
+三条关键设计：
+
+1. **决策点在库存展示之前**，不是下单之后——否则买家已付款，15 元只能买到一个更晚的退款。
+2. **阈值进配置，不进代码**：`stale_threshold_min=8`、`excluded_channels=amazon_us`、`amazon_low_stock=3`。
+3. **文案决定误报的真实代价**：命中时展示「库存确认中，预计 10 分钟内告知」，而不是「缺货」；若「确认中」显著压转化，就必须按误报 30 元/笔重算（盈亏平衡 e 升到 60.4%）。
+
+```bash
+python src/rule.py          # 自测：边界 8/9、Amazon 例外、规则 C
+```
+
+---
+
+## 5. 局限与未完成
 
 - **样本量与周期**：仅 7 天（2026-08-31 ~ 09-07）、1072 单，未见季节性；结论是相关性 + 机制一致，不是因果实验。
 - **38 单状态未回传（3.5%）**：已从所有比率中剔除；未假设其分布。
@@ -237,7 +273,7 @@ python src/robustness.py   # 产出 outputs/robustness.json、outputs/sensitivit
 
 ---
 
-## 5. 数据说明
+## 6. 数据说明
 
 - `data/order_fulfillment.csv` 为任务方发放的原始数据，**未做任何修改**；其中 51 行完全重复，原样保留并在 `outputs/metrics.json` 的 `dedupe_sensitivity` 中给出去重对照。
 - 本项目**未补造任何数据**；`data/synthetic/` 为空目录占位。

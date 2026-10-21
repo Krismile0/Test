@@ -438,5 +438,12 @@
       "stockouts": "17",
       "stockout_rate": "0.1371"
     }
-  ]
+  ],
+  "implementation_check": {
+    "rule_b_flagged_impl": 193,
+    "rule_b_flagged_analysis": 193,
+    "rule_c_flagged_impl": 219,
+    "rule_c_flagged_analysis": 219,
+    "consistent": true
+  }
 }

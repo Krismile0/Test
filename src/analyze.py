@@ -266,6 +266,21 @@ def main() -> None:
     ax.legend(fontsize=8); fig.tight_layout(); fig.savefig(OUT / "fig_cost_curve.png", dpi=150); plt.close(fig)
 
     normalize_outputs()
+    # 生产实现 src/rule.py 与分析口径的一致性校验
+    from rule import should_flag
+    impl_B = d.apply(lambda r: should_flag(lag_min=r["lag_min"], platform_channel=r["platform_channel"],
+                                           stock_display=r["stock_display"], variant="B").flag, axis=1)
+    impl_C = d.apply(lambda r: should_flag(lag_min=r["lag_min"], platform_channel=r["platform_channel"],
+                                           stock_display=r["stock_display"], variant="C").flag, axis=1)
+    m["implementation_check"] = {
+        "rule_b_flagged_impl": int(impl_B.sum()),
+        "rule_b_flagged_analysis": int(rules["rule_lag>8_and_channel!=amazon"].sum()),
+        "rule_c_flagged_impl": int(impl_C.sum()),
+        "rule_c_flagged_analysis": int(rules["rule_C_plus_amazon_lowstock"].sum()),
+        "consistent": bool(int(impl_B.sum()) == int(rules["rule_lag>8_and_channel!=amazon"].sum())
+                           and int(impl_C.sum()) == int(rules["rule_C_plus_amazon_lowstock"].sum())),
+    }
+    normalize_outputs()
     (OUT / "metrics.json").write_text(json.dumps(m, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
     print(json.dumps({k: m[k] for k in ["rows_total", "rows_labeled", "stockouts", "fresh", "stale",
                                         "stale_share_of_stockouts", "baseline_cost", "rules",
