@@ -1,0 +1,17 @@
+﻿platform_channel,lag_bucket,0.0,1.0
+amazon_us,0-8min,16,169
+amazon_us,9-15min,1,10
+amazon_us,16-30min,0,11
+amazon_us,31-60min,5,39
+shopify_direct,0-8min,4,175
+shopify_direct,9-15min,2,3
+shopify_direct,16-30min,8,13
+shopify_direct,31-60min,24,24
+temu_us,0-8min,5,198
+temu_us,9-15min,4,2
+temu_us,16-30min,10,7
+temu_us,31-60min,17,19
+tiktok_us,0-8min,2,206
+tiktok_us,9-15min,4,2
+tiktok_us,16-30min,12,6
+tiktok_us,31-60min,22,14

@@ -1,0 +1,5 @@
+﻿tp,fp,fn,tn,flagged,cost,rule,saving,saving_pct
+0,0,136,898,0,12240,no_action,0,0.0
+109,150,27,748,259,6315,rule_lag>8,5925,48.41
+103,90,33,808,193,5865,rule_lag>8_and_channel!=amazon,6375,52.08
+103,90,33,808,193,5865,rule_lag>8_and_channel_not_in_(amazon),6375,52.08

@@ -1,0 +1,9 @@
+﻿channel,segment,n,stockouts,stockout_rate,ci_low,ci_high
+amazon_us,fresh(<=8),185,16,0.0865,0.0539,0.1359
+amazon_us,stale(>8),66,6,0.0909,0.0423,0.1845
+shopify_direct,fresh(<=8),179,4,0.0223,0.0087,0.056
+shopify_direct,stale(>8),74,34,0.4595,0.3507,0.5722
+temu_us,fresh(<=8),203,5,0.0246,0.0106,0.0564
+temu_us,stale(>8),59,31,0.5254,0.4004,0.6473
+tiktok_us,fresh(<=8),208,2,0.0096,0.0026,0.0344
+tiktok_us,stale(>8),60,38,0.6333,0.5068,0.7438
