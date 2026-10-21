@@ -111,6 +111,38 @@
     }
   ],
   "rule_b_breakeven_flag_cost": 60,
+  "mantel_haenszel_or": {
+    "by_channel": 15.55,
+    "by_category": 18.99,
+    "by_browse_quintile": 18.08
+  },
+  "dose_response_in_stale": [
+    {
+      "lag_bucket": "(8, 20]",
+      "n": 53,
+      "rate": 0.377
+    },
+    {
+      "lag_bucket": "(20, 30]",
+      "n": 42,
+      "rate": 0.5
+    },
+    {
+      "lag_bucket": "(30, 40]",
+      "n": 48,
+      "rate": 0.438
+    },
+    {
+      "lag_bucket": "(40, 50]",
+      "n": 68,
+      "rate": 0.412
+    },
+    {
+      "lag_bucket": "(50, 60]",
+      "n": 48,
+      "rate": 0.396
+    }
+  ],
   "time_split": {
     "train": {
       "period": "2026-08-31 ~ 2026-09-04",

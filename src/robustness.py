@@ -111,6 +111,35 @@ b = sens[(sens.rule == "lag>8 且非 Amazon")]
 breakeven = b[b.saving <= 0].c_flag.min() if (b.saving <= 0).any() else None
 res["rule_b_breakeven_flag_cost"] = int(breakeven) if breakeven else ">60"
 
+# ---------- 2.5 分层优势比（Mantel-Haenszel），验证 lag 效应不是渠道/类目/浏览混杂 ----------
+def mh_or(frame: pd.DataFrame, strata: str) -> float:
+    num = den = 0.0
+    for _, g in frame.groupby(strata, observed=True):
+        a = int(((g["lag_min"] > 8) & (g["is_stockout"] == 1)).sum())
+        b = int(((g["lag_min"] > 8) & (g["is_stockout"] == 0)).sum())
+        c = int(((g["lag_min"] <= 8) & (g["is_stockout"] == 1)).sum())
+        e = int(((g["lag_min"] <= 8) & (g["is_stockout"] == 0)).sum())
+        n = len(g)
+        num += a * e / n
+        den += b * c / n
+    return round(num / den, 2)
+
+
+d["browse_q"] = pd.qcut(d["buyer_browsing_sec"], 5, duplicates="drop")
+res["mantel_haenszel_or"] = {
+    "by_channel": mh_or(d, "platform_channel"),
+    "by_category": mh_or(d, "product_category"),
+    "by_browse_quintile": mh_or(d, "browse_q"),
+}
+# 迟滞档内是否存在剂量反应
+stale_d = d[d["lag_min"] > 8].copy()
+stale_d["lag_bucket"] = pd.cut(stale_d["lag_min"], [8, 20, 30, 40, 50, 60])
+res["dose_response_in_stale"] = (stale_d.groupby("lag_bucket", observed=True)
+                                 .agg(n=("is_stockout", "size"), rate=("is_stockout", "mean"))
+                                 .reset_index().assign(rate=lambda x: x["rate"].round(3),
+                                                       lag_bucket=lambda x: x["lag_bucket"].astype(str))
+                                 .to_dict("records"))
+
 # ---------- 3. 时序验证：前 4 天定规则，后 3 天验证 ----------
 d["order_date"] = pd.to_datetime(d["order_time"], utc=True).dt.date
 dates = sorted(d["order_date"].unique())
