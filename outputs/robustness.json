@@ -1,0 +1,237 @@
+{
+  "bootstrap": {
+    "stale_rate": [
+      0.4208,
+      [
+        0.3629,
+        0.4826
+      ]
+    ],
+    "fresh_rate": [
+      0.0348,
+      [
+        0.0219,
+        0.0477
+      ]
+    ],
+    "amazon_stale_rate": [
+      0.0909,
+      [
+        0.0303,
+        0.1667
+      ]
+    ],
+    "other_stale_rate": [
+      0.5337,
+      [
+        0.4611,
+        0.6062
+      ]
+    ],
+    "fresh_lowstock_rate": [
+      0.1616,
+      [
+        0.0909,
+        0.2424
+      ]
+    ],
+    "fresh_normal_rate": [
+      0.0163,
+      [
+        0.0074,
+        0.0266
+      ]
+    ]
+  },
+  "rule_b_saving": {
+    "point": 6375,
+    "ci95": [
+      4874,
+      7860
+    ],
+    "p_saving_positive": 1.0
+  },
+  "best_rule_by_flag_cost": [
+    {
+      "c_flag": 5,
+      "rule": "lag>8 且非 Amazon，或新鲜档低库存(<=3)",
+      "cost": 2990,
+      "saving": 9250,
+      "saving_pct": 75.57
+    },
+    {
+      "c_flag": 10,
+      "rule": "lag>8 且非 Amazon，或新鲜档低库存(<=3)",
+      "cost": 4450,
+      "saving": 7790,
+      "saving_pct": 63.64
+    },
+    {
+      "c_flag": 15,
+      "rule": "lag>8 且非 Amazon",
+      "cost": 5865,
+      "saving": 6375,
+      "saving_pct": 52.08
+    },
+    {
+      "c_flag": 20,
+      "rule": "lag>8 且非 Amazon",
+      "cost": 6830,
+      "saving": 5410,
+      "saving_pct": 44.2
+    },
+    {
+      "c_flag": 30,
+      "rule": "lag>8 且非 Amazon",
+      "cost": 8760,
+      "saving": 3480,
+      "saving_pct": 28.43
+    },
+    {
+      "c_flag": 45,
+      "rule": "lag>8 且非 Amazon",
+      "cost": 11655,
+      "saving": 585,
+      "saving_pct": 4.78
+    },
+    {
+      "c_flag": 60,
+      "rule": "仅在迟滞档且低库存",
+      "cost": 13170,
+      "saving": -930,
+      "saving_pct": -7.6
+    }
+  ],
+  "rule_b_breakeven_flag_cost": 60,
+  "time_split": {
+    "train": {
+      "period": "2026-08-31 ~ 2026-09-04",
+      "n": 604,
+      "stockouts": 84,
+      "stockout_rate": 0.1391,
+      "stale_rate": 0.4231,
+      "fresh_rate": 0.0402,
+      "rule_b_cost": 3945,
+      "rule_b_saving": 3615,
+      "rule_b_saving_pct": 47.82
+    },
+    "test": {
+      "period": "2026-09-05 ~ 2026-09-07",
+      "n": 430,
+      "stockouts": 52,
+      "stockout_rate": 0.1209,
+      "stale_rate": 0.4175,
+      "fresh_rate": 0.0275,
+      "rule_b_cost": 1920,
+      "rule_b_saving": 2760,
+      "rule_b_saving_pct": 58.97
+    }
+  },
+  "hourly": [
+    {
+      "hour": 7,
+      "orders": 65,
+      "stale": 22,
+      "stockouts": 15,
+      "stale_rate": 0.338
+    },
+    {
+      "hour": 8,
+      "orders": 82,
+      "stale": 19,
+      "stockouts": 5,
+      "stale_rate": 0.232
+    },
+    {
+      "hour": 9,
+      "orders": 67,
+      "stale": 9,
+      "stockouts": 8,
+      "stale_rate": 0.134
+    },
+    {
+      "hour": 10,
+      "orders": 74,
+      "stale": 16,
+      "stockouts": 5,
+      "stale_rate": 0.216
+    },
+    {
+      "hour": 11,
+      "orders": 61,
+      "stale": 17,
+      "stockouts": 11,
+      "stale_rate": 0.279
+    },
+    {
+      "hour": 12,
+      "orders": 70,
+      "stale": 18,
+      "stockouts": 11,
+      "stale_rate": 0.257
+    },
+    {
+      "hour": 13,
+      "orders": 51,
+      "stale": 14,
+      "stockouts": 6,
+      "stale_rate": 0.275
+    },
+    {
+      "hour": 14,
+      "orders": 69,
+      "stale": 19,
+      "stockouts": 9,
+      "stale_rate": 0.275
+    },
+    {
+      "hour": 15,
+      "orders": 82,
+      "stale": 18,
+      "stockouts": 13,
+      "stale_rate": 0.22
+    },
+    {
+      "hour": 16,
+      "orders": 70,
+      "stale": 23,
+      "stockouts": 9,
+      "stale_rate": 0.329
+    },
+    {
+      "hour": 17,
+      "orders": 64,
+      "stale": 18,
+      "stockouts": 11,
+      "stale_rate": 0.281
+    },
+    {
+      "hour": 18,
+      "orders": 74,
+      "stale": 15,
+      "stockouts": 10,
+      "stale_rate": 0.203
+    },
+    {
+      "hour": 19,
+      "orders": 66,
+      "stale": 17,
+      "stockouts": 9,
+      "stale_rate": 0.258
+    },
+    {
+      "hour": 20,
+      "orders": 68,
+      "stale": 16,
+      "stockouts": 8,
+      "stale_rate": 0.235
+    },
+    {
+      "hour": 21,
+      "orders": 71,
+      "stale": 18,
+      "stockouts": 6,
+      "stale_rate": 0.254
+    }
+  ]
+}
