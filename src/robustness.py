@@ -26,6 +26,12 @@ df["lag_min"] = (pd.to_datetime(df["order_time"], utc=True)
 d = df.dropna(subset=["order_status"]).copy()
 d["is_stockout"] = (d["order_status"] == 0).astype(int)
 
+def normalize_outputs() -> None:
+    """Generated CSVs use LF only, so reruns produce zero diff across platforms."""
+    for f in OUT.glob("*.csv"):
+        f.write_bytes(f.read_bytes().replace(bytes([13, 10]), bytes([10])))
+
+
 rng = np.random.default_rng(42)
 res: dict = {}
 
@@ -238,5 +244,6 @@ ax.set_xlabel("每次提前标记的成本（元）"); ax.set_ylabel("净节省�
 ax.set_title("标记成本敏感性：规则 B 在成本升到 ~60 元前仍有效")
 ax.legend(fontsize=7); fig.tight_layout(); fig.savefig(OUT / "fig_sensitivity.png", dpi=150); plt.close(fig)
 
+normalize_outputs()
 (OUT / "robustness.json").write_text(json.dumps(res, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
 print(json.dumps(res, ensure_ascii=False, indent=2, default=str))

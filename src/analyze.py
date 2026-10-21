@@ -57,6 +57,12 @@ def rule_cost(labels: pd.Series, flags: pd.Series) -> dict:
     return dict(tp=tp, fp=fp, fn=fn, tn=tn, flagged=tp + fp, cost=cost)
 
 
+def normalize_outputs() -> None:
+    """Generated CSVs use LF only, so reruns produce zero diff across platforms."""
+    for f in OUT.glob("*.csv"):
+        f.write_bytes(f.read_bytes().replace(bytes([13, 10]), bytes([10])))
+
+
 def main() -> None:
     df = load()
     m: dict = {}
@@ -259,6 +265,7 @@ def main() -> None:
     ax.set_title("阈值扫描：总成本在 8 分钟后不再下降")
     ax.legend(fontsize=8); fig.tight_layout(); fig.savefig(OUT / "fig_cost_curve.png", dpi=150); plt.close(fig)
 
+    normalize_outputs()
     (OUT / "metrics.json").write_text(json.dumps(m, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
     print(json.dumps({k: m[k] for k in ["rows_total", "rows_labeled", "stockouts", "fresh", "stale",
                                         "stale_share_of_stockouts", "baseline_cost", "rules",
