@@ -63,6 +63,8 @@ def main() -> None:
     m["rows_total"] = len(df)
     m["rows_labeled"] = int(df["order_status"].notna().sum())
     m["rows_missing_status"] = int(df["order_status"].isna().sum())
+    m["duplicate_rows"] = int(df.duplicated().sum())
+    m["unique_order_ids"] = int(df["order_id"].nunique())
     m["stockouts"] = int((df["order_status"] == 0).sum())
     m["fulfilled"] = int((df["order_status"] == 1).sum())
     m["order_period"] = [str(df["order_date"].min()), str(df["order_date"].max())]
@@ -136,6 +138,9 @@ def main() -> None:
         "no_action": pd.Series(False, index=d.index),
         "rule_lag>8": d["lag_min"] > stale_thr,
         "rule_lag>8_and_channel!=amazon": (d["lag_min"] > stale_thr) & (d["platform_channel"] != "amazon_us"),
+        "rule_C_plus_amazon_lowstock": (((d["lag_min"] > stale_thr) & (d["platform_channel"] != "amazon_us"))
+                                        | ((d["platform_channel"] == "amazon_us") & (d["lag_min"] <= stale_thr)
+                                           & (d["stock_display"] <= 3))),
     }
     # 逐阈值扫描（单变量 lag 规则）
     scan = []
@@ -157,6 +162,35 @@ def main() -> None:
     rules_df = pd.DataFrame(res)
     rules_df.to_csv(OUT / "rule_costs.csv", index=False, encoding="utf-8-sig")
     m["rules"] = res
+
+    # Amazon 新鲜档低库存：渠道专属的第二信号
+    amz_low = d[(d.platform_channel == "amazon_us") & (d.lag_min <= stale_thr) & (d.stock_display <= 3)]
+    amz_low_hi = d[(d.platform_channel == "amazon_us") & (d.lag_min <= stale_thr) & (d.stock_display > 3)]
+    m["amazon_fresh_lowstock"] = dict(n=len(amz_low), stockouts=int((amz_low.order_status == 0).sum()),
+                                      rate=round(1 - amz_low.order_status.mean(), 4),
+                                      ci_low=round(wilson_ci(int((amz_low.order_status == 0).sum()), len(amz_low))[0], 4),
+                                      ci_high=round(wilson_ci(int((amz_low.order_status == 0).sum()), len(amz_low))[1], 4))
+    m["amazon_fresh_highstock"] = dict(n=len(amz_low_hi), stockouts=int((amz_low_hi.order_status == 0).sum()),
+                                       rate=round(1 - amz_low_hi.order_status.mean(), 4))
+    m["amazon_lowstock_by_day"] = (amz_low.assign(day=pd.to_datetime(amz_low.order_time, utc=True)
+                                                   .dt.tz_convert("Asia/Shanghai").dt.date)
+                                   .groupby("day").agg(n=("order_status", "size"),
+                                                       stockouts=("order_status", lambda x: int((x == 0).sum())))
+                                   .reset_index().astype(str).to_dict("records"))
+
+    # 重复行敏感性：去重后重算核心指标
+    nd = df.drop_duplicates().dropna(subset=["order_status"])
+    st_nd = nd.lag_min > stale_thr
+    flags_nd = ((st_nd & (nd.platform_channel != "amazon_us"))
+                | ((nd.platform_channel == "amazon_us") & (~st_nd) & (nd.stock_display <= 3)))
+    base_nd = int((nd.order_status == 0).sum()) * COST_STOCKOUT
+    cost_nd = rule_cost(nd["order_status"], flags_nd)
+    m["dedupe_sensitivity"] = dict(
+        rows_after_dedupe=len(nd), duplicate_rows=int(df.duplicated().sum()),
+        fresh_rate=round(1 - nd[~st_nd].order_status.mean(), 4),
+        stale_rate=round(1 - nd[st_nd].order_status.mean(), 4),
+        rule_c_cost=cost_nd["cost"], rule_c_saving=int(base_nd - cost_nd["cost"]),
+        rule_c_saving_pct=round(100 * (base_nd - cost_nd["cost"]) / base_nd, 2))
 
     # 若彻底修好同步（反事实：迟滞订单按新鲜档 3.5% 砍单率计）
     fresh_rate = 1 - fresh.order_status.mean()

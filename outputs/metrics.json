@@ -2,6 +2,8 @@
   "rows_total": 1072,
   "rows_labeled": 1034,
   "rows_missing_status": 38,
+  "duplicate_rows": 51,
+  "unique_order_ids": 1021,
   "stockouts": 136,
   "fulfilled": 898,
   "order_period": [
@@ -300,8 +302,77 @@
       "rule": "rule_lag>8_and_channel!=amazon",
       "saving": 6375,
       "saving_pct": 52.08
+    },
+    {
+      "tp": 116,
+      "fp": 103,
+      "fn": 20,
+      "tn": 795,
+      "flagged": 219,
+      "cost": 5085,
+      "rule": "rule_C_plus_amazon_lowstock",
+      "saving": 7155,
+      "saving_pct": 58.46
     }
   ],
+  "amazon_fresh_lowstock": {
+    "n": 26,
+    "stockouts": 13,
+    "rate": 0.5,
+    "ci_low": 0.3206,
+    "ci_high": 0.6794
+  },
+  "amazon_fresh_highstock": {
+    "n": 159,
+    "stockouts": 3,
+    "rate": 0.0189
+  },
+  "amazon_lowstock_by_day": [
+    {
+      "day": "2026-09-01",
+      "n": "2",
+      "stockouts": "0"
+    },
+    {
+      "day": "2026-09-02",
+      "n": "3",
+      "stockouts": "0"
+    },
+    {
+      "day": "2026-09-03",
+      "n": "4",
+      "stockouts": "3"
+    },
+    {
+      "day": "2026-09-04",
+      "n": "5",
+      "stockouts": "3"
+    },
+    {
+      "day": "2026-09-05",
+      "n": "8",
+      "stockouts": "4"
+    },
+    {
+      "day": "2026-09-06",
+      "n": "2",
+      "stockouts": "1"
+    },
+    {
+      "day": "2026-09-07",
+      "n": "2",
+      "stockouts": "2"
+    }
+  ],
+  "dedupe_sensitivity": {
+    "rows_after_dedupe": 987,
+    "duplicate_rows": 51,
+    "fresh_rate": 0.0338,
+    "stale_rate": 0.4113,
+    "rule_c_cost": 4815,
+    "rule_c_saving": 6615,
+    "rule_c_saving_pct": 57.87
+  },
   "counterfactual_fix_sync": {
     "assumed_fresh_rate": 0.0348,
     "expected_stockouts": 36.0,

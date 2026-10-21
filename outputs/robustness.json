@@ -51,45 +51,53 @@
     ],
     "p_saving_positive": 1.0
   },
+  "rule_c_saving": {
+    "point": 7155,
+    "ci95": [
+      5609,
+      8775
+    ],
+    "p_saving_positive": 1.0
+  },
   "best_rule_by_flag_cost": [
     {
       "c_flag": 5,
-      "rule": "lag>8 且非 Amazon，或新鲜档低库存(<=3)",
-      "cost": 2990,
-      "saving": 9250,
-      "saving_pct": 75.57
+      "rule": "规则C: B + Amazon新鲜档低库存<=3",
+      "cost": 2895,
+      "saving": 9345,
+      "saving_pct": 76.35
     },
     {
       "c_flag": 10,
-      "rule": "lag>8 且非 Amazon，或新鲜档低库存(<=3)",
-      "cost": 4450,
-      "saving": 7790,
-      "saving_pct": 63.64
+      "rule": "规则C: B + Amazon新鲜档低库存<=3",
+      "cost": 3990,
+      "saving": 8250,
+      "saving_pct": 67.4
     },
     {
       "c_flag": 15,
-      "rule": "lag>8 且非 Amazon",
-      "cost": 5865,
-      "saving": 6375,
-      "saving_pct": 52.08
+      "rule": "规则C: B + Amazon新鲜档低库存<=3",
+      "cost": 5085,
+      "saving": 7155,
+      "saving_pct": 58.46
     },
     {
       "c_flag": 20,
-      "rule": "lag>8 且非 Amazon",
-      "cost": 6830,
-      "saving": 5410,
-      "saving_pct": 44.2
+      "rule": "规则C: B + Amazon新鲜档低库存<=3",
+      "cost": 6180,
+      "saving": 6060,
+      "saving_pct": 49.51
     },
     {
       "c_flag": 30,
-      "rule": "lag>8 且非 Amazon",
-      "cost": 8760,
-      "saving": 3480,
-      "saving_pct": 28.43
+      "rule": "规则C: B + Amazon新鲜档低库存<=3",
+      "cost": 8370,
+      "saving": 3870,
+      "saving_pct": 31.62
     },
     {
       "c_flag": 45,
-      "rule": "lag>8 且非 Amazon",
+      "rule": "规则C: B + Amazon新鲜档低库存<=3",
       "cost": 11655,
       "saving": 585,
       "saving_pct": 4.78

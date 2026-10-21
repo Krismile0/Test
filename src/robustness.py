@@ -62,27 +62,29 @@ res["bootstrap"] = {
                           bootstrap_ci(fresh & ~low_stock)],
 }
 
-# 规则 B 节省的 Bootstrap（对订单重抽样）
+# 规则 B / C 节省的 Bootstrap（对订单重抽样）
 base_rule = stale & (d["platform_channel"] != "amazon_us")
+rule_c = base_rule | ((d["platform_channel"] == "amazon_us") & (~stale) & (d["stock_display"] <= 3))
 n = len(d)
-savings = []
 idx_all = rng.integers(0, n, size=(2000, n))
-for row in idx_all:
-    sub = d.iloc[row]
-    base_cost = sub["is_stockout"].sum() * 90
-    cost = 15 * len(sub) * 0 + 15 * base_rule.iloc[row].sum() + 90 * ((~base_rule.iloc[row]) & sub["is_stockout"].astype(bool)).sum()
-    savings.append(base_cost - cost)
-savings = np.array(savings)
-res["rule_b_saving"] = {
-    "point": int((d["is_stockout"].sum() * 90) -
-                 rule_cost(d, base_rule, 15, 90)),
-    "ci95": [int(np.quantile(savings, 0.025)), int(np.quantile(savings, 0.975))],
-    "p_saving_positive": round(float((savings > 0).mean()), 4),
-}
+for label, rule in [("rule_b", base_rule), ("rule_c", rule_c)]:
+    savings = []
+    for row in idx_all:
+        y = d["is_stockout"].to_numpy()[row].astype(bool)
+        f = rule.to_numpy()[row].astype(bool)
+        base_cost = y.sum() * 90
+        savings.append(base_cost - (15 * f.sum() + 90 * ((~f) & y).sum()))
+    savings = np.array(savings)
+    res[f"{label}_saving"] = {
+        "point": int(d["is_stockout"].sum() * 90 - rule_cost(d, rule, 15, 90)),
+        "ci95": [int(np.quantile(savings, 0.025)), int(np.quantile(savings, 0.975))],
+        "p_saving_positive": round(float((savings > 0).mean()), 4),
+    }
 
 # ---------- 2. 成本敏感性：标记成本 c_flag 变化时的最优规则 ----------
 rules = {
     "lag>8": stale,
+    "规则C: B + Amazon新鲜档低库存<=3": rule_c,
     "lag>8 且非 Amazon": base_rule,
     "lag>8 且非 Amazon，或新鲜档低库存(<=3)": base_rule | (fresh & low_stock),
     "仅在迟滞档且低库存": stale & low_stock,
