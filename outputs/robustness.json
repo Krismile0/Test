@@ -143,6 +143,27 @@
       "rate": 0.396
     }
   ],
+  "efficacy_breakeven": {
+    "规则A: lag>8": {
+      "breakeven_e_fp_loss_0": 0.396,
+      "breakeven_e_fp_loss_30": 0.8547
+    },
+    "规则B: lag>8 且非Amazon": {
+      "breakeven_e_fp_loss_0": 0.3123,
+      "breakeven_e_fp_loss_30": 0.6036
+    },
+    "规则C: B + Amazon低库存": {
+      "breakeven_e_fp_loss_0": 0.3147,
+      "breakeven_e_fp_loss_30": 0.6106
+    }
+  },
+  "pilot_design": {
+    "control_stockout_rate_among_flagged": 0.5337,
+    "detect_effect_size": 0.3,
+    "n_per_arm": 151,
+    "flagged_per_day": 27.6,
+    "estimated_days": 10.9
+  },
   "time_split": {
     "train": {
       "period": "2026-08-31 ~ 2026-09-04",

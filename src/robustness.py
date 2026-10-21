@@ -140,6 +140,59 @@ res["dose_response_in_stale"] = (stale_d.groupby("lag_bucket", observed=True)
                                                        lag_bucket=lambda x: x["lag_bucket"].astype(str))
                                  .to_dict("records"))
 
+# ---------- 2.7 拦截率（efficacy）回填：标记只有部分概率真的避免砍单 ----------
+# 期望节省 = e × TP × 90 − 15 × flag数 − m × FP（m=误报导致的转化损失，题目未给，默认 0）
+idx_e = []
+rules_e = {"规则A: lag>8": stale, "规则B: lag>8 且非Amazon": base_rule, "规则C: B + Amazon低库存": rule_c}
+for name, flags in rules_e.items():
+    y = d["is_stockout"].astype(bool)
+    tp = int((flags & y).sum())
+    fp = int((flags & ~y).sum())
+    flagged = int(flags.sum())
+    base = int(y.sum()) * 90
+    for m in [0, 15, 30]:
+        for e in [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]:
+            saving = e * tp * 90 - 15 * flagged - m * fp
+            idx_e.append(dict(rule=name, efficacy=round(e, 2), fp_loss=m, tp=tp, fp=fp,
+                              flagged=flagged, saving=round(saving, 0),
+                              saving_pct=round(100 * saving / base, 2)))
+    be = (15 * flagged + 0 * fp) / (tp * 90) if tp else None
+    be_m30 = (15 * flagged + 30 * fp) / (tp * 90) if tp else None
+    res.setdefault("efficacy_breakeven", {})[name] = {
+        "breakeven_e_fp_loss_0": round(be, 4) if be is not None else None,
+        "breakeven_e_fp_loss_30": round(be_m30, 4) if be_m30 is not None else None,
+    }
+pd.DataFrame(idx_e).to_csv(OUT / "efficacy_sensitivity.csv", index=False, encoding="utf-8-sig")
+
+# 灰度实验设计：50/50 分流，检验 e 是否 >= 30%（双比例检验，α=0.05，power=0.8）
+from math import sqrt
+y_b = d["is_stockout"].astype(bool)
+p1 = float((base_rule & y_b).sum() / base_rule.sum())      # 对照组（不干预）砍单率
+p2 = p1 * (1 - 0.30)                                       # 若 e=30%，处理组预期砍单率
+pbar = (p1 + p2) / 2
+z_a, z_b = 1.959963985, 0.841621234
+n_arm = ((z_a * sqrt(2 * pbar * (1 - pbar)) + z_b * sqrt(p1 * (1 - p1) + p2 * (1 - p2))) ** 2
+         / (p1 - p2) ** 2)
+flagged_per_week = base_rule.sum() / 7
+res["pilot_design"] = {
+    "control_stockout_rate_among_flagged": round(p1, 4),
+    "detect_effect_size": 0.30,
+    "n_per_arm": int(-(-n_arm // 1)),
+    "flagged_per_day": round(float(base_rule.sum() / 7), 1),
+    "estimated_days": round(float(n_arm / (base_rule.sum() / 7 / 2)), 1),  # 50/50 分流，处理组每天只有一半
+}
+
+fig, ax = plt.subplots(figsize=(8, 4.6))
+for name in rules_e:
+    g = pd.DataFrame(idx_e)
+    g = g[(g.rule == name) & (g.fp_loss == 0)]
+    ax.plot(g.efficacy, g.saving, marker="o", ms=3, label=name)
+ax.axhline(0, color="k", lw=0.8)
+ax.axvline(0.312, color="gray", ls="--", lw=1, label="规则B盈亏平衡 e≈31%")
+ax.set_xlabel("拦截率 e（标记后真正避免砍单的比例）"); ax.set_ylabel("净节省（元/7天）")
+ax.set_title("收益对拦截率高度敏感：e<31% 时规则B开始亏钱")
+ax.legend(fontsize=8); fig.tight_layout(); fig.savefig(OUT / "fig_efficacy.png", dpi=150); plt.close(fig)
+
 # ---------- 3. 时序验证：前 4 天定规则，后 3 天验证 ----------
 d["order_date"] = pd.to_datetime(d["order_time"], utc=True).dt.date
 dates = sorted(d["order_date"].unique())
